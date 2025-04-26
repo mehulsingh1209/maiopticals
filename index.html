@@ -1,320 +1,459 @@
-import { useState } from 'react';
-
-export default function MaiOpticalsForm() {
-  const [formData, setFormData] = useState({
-    patientName: '',
-    age: '',
-    phoneNumber: '',
-    rightEye: { sphere: '', cylinder: '', axis: '', pd: '' },
-    leftEye: { sphere: '', cylinder: '', axis: '', pd: '' },
-    lensType: 'Single Vision',
-    frameType: 'Metal',
-    notes: ''
-  });
-  
-  const [submitted, setSubmitted] = useState(false);
-  const [sending, setSending] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData({
-        ...formData,
-        [parent]: { ...formData[parent], [child]: value }
-      });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSending(true);
-    
-    // Simulate SMS sending with setTimeout
-    setTimeout(() => {
-      setSending(false);
-      setSubmitted(true);
-    }, 1500);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      patientName: '',
-      age: '',
-      phoneNumber: '',
-      rightEye: { sphere: '', cylinder: '', axis: '', pd: '' },
-      leftEye: { sphere: '', cylinder: '', axis: '', pd: '' },
-      lensType: 'Single Vision',
-      frameType: 'Metal',
-      notes: ''
-    });
-    setSubmitted(false);
-  };
-
-  const generateMessage = () => {
-    return `Mai Opticals - Prescription Details
-    
-Patient: ${formData.patientName}, Age: ${formData.age}
-Right Eye: SPH ${formData.rightEye.sphere} CYL ${formData.rightEye.cylinder} AXIS ${formData.rightEye.axis} PD ${formData.rightEye.pd}
-Left Eye: SPH ${formData.leftEye.sphere} CYL ${formData.leftEye.cylinder} AXIS ${formData.leftEye.axis} PD ${formData.leftEye.pd}
-Lens: ${formData.lensType}
-Frame: ${formData.frameType}
-Notes: ${formData.notes}
-
-Thank you for choosing Mai Opticals, Birgunj.
-Contact: +977-xxxxxxxxx`;
-  };
-  
-  if (submitted) {
-    return (
-      <div className="max-w-lg mx-auto p-6 bg-white rounded-xl shadow-lg font-sans">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-700">Prescription Sent!</h2>
-          <p className="text-gray-600">SMS notifications have been sent to the patient and shop owner.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mai Opticals - Prescription Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;       /* Deep blue */
+            --primary-light: #3b82f6; /* Lighter blue */
+            --secondary: #1e40af;     /* Darker blue */
+            --success: #10b981;       /* Green for success/buttons */
+            --success-hover: #059669; /* Darker green */
+            --warning: #f59e0b;       /* Yellow for payment warnings */
+            --danger: #ef4444;        /* Red for errors */
+            --light: #f8fafc;        /* Light gray background */
+            --medium: #e2e8f0;        /* Medium gray for borders */
+            --dark: #1e293b;          /* Dark text */
+            --text-muted: #64748b;    /* Muted text */
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin: 20px 0;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--medium);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .eye-section {
+            background-color: var(--light);
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--medium);
+        }
+        
+        .eye-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .payment-section {
+            background-color: var(--light);
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--medium);
+        }
+        
+        .payment-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .total-amount {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .collected-amount {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+        }
+        
+        .remaining-amount {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        button {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-top: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+        
+        button:hover {
+            background-color: var(--success-hover);
+            transform: translateY(-2px);
+        }
+        
+        .success-message {
+            display: none;
+            background-color: var(--success);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-weight: 500;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .logo h1 {
+                font-size: 1.75rem;
+            }
+            
+            .payment-display {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 1.25rem;
+                border-radius: 8px;
+            }
+            
+            .form-grid, .form-row {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+            
+            input, select, textarea {
+                padding: 0.65rem;
+            }
+            
+            button {
+                padding: 0.9rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>Mai Opticals</h1>
+            <p>Birgunj, Nepal</p>
         </div>
         
-        <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
-          <h3 className="font-bold mb-2 text-blue-600">SMS Message:</h3>
-          <pre className="whitespace-pre-wrap text-sm bg-white p-3 rounded-lg border border-gray-200">
-            {generateMessage()}
-          </pre>
-        </div>
-        
-        <div className="text-center">
-          <button 
-            onClick={resetForm}
-            className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
-          >
-            New Prescription
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-lg mx-auto p-6 bg-white rounded-xl shadow-lg font-sans">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-blue-700 mb-2">Mai Opticals</h1>
-        <p className="text-gray-600">Eye Prescription Form - Birgunj, Nepal</p>
-      </div>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Patient Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Patient Name *</label>
-            <input 
-              type="text" 
-              name="patientName"
-              value={formData.patientName}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-700 mb-2 font-medium">Age *</label>
-              <input 
-                type="number" 
-                name="age"
-                value={formData.age}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
+        <form id="prescriptionForm">
+            <div class="form-group">
+                <label for="patientName">Patient Name</label>
+                <input type="text" id="patientName" required>
             </div>
             
-            <div>
-              <label className="block text-gray-700 mb-2 font-medium">Phone *</label>
-              <input 
-                type="tel" 
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                required
-                placeholder="98xxxxxxxx"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" required>
+                </div>
+                
+                <div class="form-group" style="flex: 2;">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" required>
+                </div>
             </div>
-          </div>
-        </div>
-        
-        {/* Right Eye Prescription */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-          <h3 className="font-bold text-blue-700 mb-3">Right Eye (RE) Prescription</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div>
-              <label className="block text-gray-700 text-sm mb-1 font-medium">Sphere</label>
-              <input 
-                type="text" 
-                name="rightEye.sphere"
-                value={formData.rightEye.sphere}
-                onChange={handleChange}
-                placeholder="+/-"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
+            
+            <div class="eye-section">
+                <div class="eye-title">Right Eye (RE) Prescription</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="reSphere">Sphere (SPH)</label>
+                        <input type="text" id="reSphere" placeholder="-2.50">
+                    </div>
+                    <div class="form-group">
+                        <label for="reCylinder">Cylinder (CYL)</label>
+                        <input type="text" id="reCylinder" placeholder="-1.25">
+                    </div>
+                    <div class="form-group">
+                        <label for="reAxis">Axis</label>
+                        <input type="text" id="reAxis" placeholder="180">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="rePd">PD (mm)</label>
+                    <input type="text" id="rePd" placeholder="Pupillary Distance">
+                </div>
             </div>
-            <div>
-              <label className="block text-gray-700 text-sm mb-1 font-medium">Cylinder</label>
-              <input 
-                type="text" 
-                name="rightEye.cylinder"
-                value={formData.rightEye.cylinder}
-                onChange={handleChange}
-                placeholder="+/-"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
+            
+            <div class="eye-section">
+                <div class="eye-title">Left Eye (LE) Prescription</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="leSphere">Sphere (SPH)</label>
+                        <input type="text" id="leSphere" placeholder="-2.50">
+                    </div>
+                    <div class="form-group">
+                        <label for="leCylinder">Cylinder (CYL)</label>
+                        <input type="text" id="leCylinder" placeholder="-1.25">
+                    </div>
+                    <div class="form-group">
+                        <label for="leAxis">Axis</label>
+                        <input type="text" id="leAxis" placeholder="180">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="lePd">PD (mm)</label>
+                    <input type="text" id="lePd" placeholder="Pupillary Distance">
+                </div>
             </div>
-            <div>
-              <label className="block text-gray-700 text-sm mb-1 font-medium">Axis</label>
-              <input 
-                type="text" 
-                name="rightEye.axis"
-                value={formData.rightEye.axis}
-                onChange={handleChange}
-                placeholder="1-180"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
+            
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="lensType">Lens Type</label>
+                    <select id="lensType" required>
+                        <option value="">Select</option>
+                        <option value="Single Vision">Single Vision</option>
+                        <option value="Bifocal">Bifocal</option>
+                        <option value="Progressive">Progressive</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="flex: 1;">
+                    <label for="frameType">Frame Type</label>
+                    <select id="frameType" required>
+                        <option value="">Select</option>
+                        <option value="Metal">Metal</option>
+                        <option value="Plastic">Plastic</option>
+                        <option value="Custom">Custom</option>
+                    </select>
+                </div>
             </div>
-            <div>
-              <label className="block text-gray-700 text-sm mb-1 font-medium">PD</label>
-              <input 
-                type="text" 
-                name="rightEye.pd"
-                value={formData.rightEye.pd}
-                onChange={handleChange}
-                placeholder="mm"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
+            
+            <!-- Payment Section -->
+            <div class="payment-section">
+                <div class="eye-title">Payment Information</div>
+                
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="totalAmount">Total Amount (NPR)</label>
+                        <input type="number" id="totalAmount" placeholder="Enter total amount" min="0" step="100">
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label for="collectedAmount">Collected Amount (NPR)</label>
+                        <input type="number" id="collectedAmount" placeholder="Amount received" min="0" step="100">
+                    </div>
+                </div>
+                
+                <div id="paymentDisplay" style="display: none;">
+                    <div class="payment-display total-amount">
+                        <span>Total:</span>
+                        <span id="displayTotal">NPR 0</span>
+                    </div>
+                    <div class="payment-display collected-amount">
+                        <span>Collected:</span>
+                        <span id="displayCollected">NPR 0</span>
+                    </div>
+                    <div class="payment-display remaining-amount">
+                        <span>Remaining:</span>
+                        <span id="displayRemaining">NPR 0</span>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-        
-        {/* Left Eye Prescription */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-          <h3 className="font-bold text-blue-700 mb-3">Left Eye (LE) Prescription</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div>
-              <label className="block text-gray-700 text-sm mb-1 font-medium">Sphere</label>
-              <input 
-                type="text" 
-                name="leftEye.sphere"
-                value={formData.leftEye.sphere}
-                onChange={handleChange}
-                placeholder="+/-"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
+            
+            <div class="form-group">
+                <label for="notes">Additional Notes</label>
+                <textarea id="notes" rows="3"></textarea>
             </div>
-            <div>
-              <label className="block text-gray-700 text-sm mb-1 font-medium">Cylinder</label>
-              <input 
-                type="text" 
-                name="leftEye.cylinder"
-                value={formData.leftEye.cylinder}
-                onChange={handleChange}
-                placeholder="+/-"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
+            
+            <button type="submit">Send Prescription via SMS</button>
+            
+            <div id="successMessage" class="success-message">
+                Prescription saved and SMS sent successfully!
             </div>
-            <div>
-              <label className="block text-gray-700 text-sm mb-1 font-medium">Axis</label>
-              <input 
-                type="text" 
-                name="leftEye.axis"
-                value={formData.leftEye.axis}
-                onChange={handleChange}
-                placeholder="1-180"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 text-sm mb-1 font-medium">PD</label>
-              <input 
-                type="text" 
-                name="leftEye.pd"
-                value={formData.leftEye.pd}
-                onChange={handleChange}
-                placeholder="mm"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
-            </div>
-          </div>
-        </div>
-        
-        {/* Lens and Frame Type */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Lens Type</label>
-            <select
-              name="lensType"
-              value={formData.lensType}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors"
-            >
-              <option value="Single Vision">Single Vision</option>
-              <option value="Bifocal">Bifocal</option>
-              <option value="Progressive">Progressive</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Frame Type</label>
-            <select
-              name="frameType"
-              value={formData.frameType}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors"
-            >
-              <option value="Metal">Metal</option>
-              <option value="Plastic">Plastic</option>
-              <option value="Custom">Custom</option>
-            </select>
-          </div>
-        </div>
-        
-        {/* Additional Notes */}
-        <div>
-          <label className="block text-gray-700 mb-2 font-medium">Additional Notes</label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            rows="3"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-          ></textarea>
-        </div>
-        
-        {/* Submit Button */}
-        <div className="pt-2">
-          <button 
-            type="submit"
-            disabled={sending}
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition duration-200 flex items-center justify-center font-medium text-lg shadow-md"
-          >
-            {sending ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Sending SMS...
-              </>
-            ) : (
-              'Send Prescription via SMS'
-            )}
-          </button>
-        </div>
-      </form>
-      
-      <div className="mt-8 text-center text-sm text-gray-500 border-t border-gray-200 pt-4">
-        <p className="font-medium">Mai Opticals - Your Vision, Our Priority</p>
-        <p>Adarshnagar, Birgunj, Nepal</p>
-      </div>
+        </form>
     </div>
-  );
-}
+
+    <script>
+        document.getElementById('prescriptionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = {
+                patientName: document.getElementById('patientName').value,
+                age: document.getElementById('age').value,
+                phone: document.getElementById('phone').value,
+                reSphere: document.getElementById('reSphere').value,
+                reCylinder: document.getElementById('reCylinder').value,
+                reAxis: document.getElementById('reAxis').value,
+                rePd: document.getElementById('rePd').value,
+                leSphere: document.getElementById('leSphere').value,
+                leCylinder: document.getElementById('leCylinder').value,
+                leAxis: document.getElementById('leAxis').value,
+                lePd: document.getElementById('lePd').value,
+                lensType: document.getElementById('lensType').value,
+                frameType: document.getElementById('frameType').value,
+                totalAmount: document.getElementById('totalAmount').value,
+                collectedAmount: document.getElementById('collectedAmount').value,
+                remainingAmount: calculateRemainingAmount(),
+                notes: document.getElementById('notes').value
+            };
+            
+            // Generate SMS message
+            const smsMessage = generateSMS(formData);
+            
+            // In a real implementation, you would send this via an SMS API
+            console.log("SMS to patient:", smsMessage);
+            console.log("SMS to shop owner:", smsMessage);
+            
+            // Show success message
+            const successMsg = document.getElementById('successMessage');
+            successMsg.style.display = 'block';
+            
+            // Reset form after 3 seconds
+            setTimeout(() => {
+                document.getElementById('prescriptionForm').reset();
+                document.getElementById('paymentDisplay').style.display = 'none';
+                successMsg.style.display = 'none';
+            }, 3000);
+        });
+        
+        // Payment calculation functions
+        function calculateRemainingAmount() {
+            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const collected = parseFloat(document.getElementById('collectedAmount').value) || 0;
+            return Math.max(0, total - collected);
+        }
+        
+        function updatePaymentDisplay() {
+            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const collected = parseFloat(document.getElementById('collectedAmount').value) || 0;
+            const remaining = calculateRemainingAmount();
+            
+            if (total > 0) {
+                document.getElementById('paymentDisplay').style.display = 'block';
+                document.getElementById('displayTotal').textContent = `NPR ${total.toLocaleString()}`;
+                document.getElementById('displayCollected').textContent = `NPR ${collected.toLocaleString()}`;
+                document.getElementById('displayRemaining').textContent = `NPR ${remaining.toLocaleString()}`;
+            } else {
+                document.getElementById('paymentDisplay').style.display = 'none';
+            }
+        }
+        
+        // Set up event listeners for payment fields
+        document.getElementById('totalAmount').addEventListener('input', updatePaymentDisplay);
+        document.getElementById('collectedAmount').addEventListener('input', updatePaymentDisplay);
+        
+        function generateSMS(data) {
+            let paymentInfo = '';
+            if (data.totalAmount) {
+                paymentInfo = `\nPayment: NPR ${data.totalAmount} (Paid: NPR ${data.collectedAmount}, Due: NPR ${data.remainingAmount})`;
+            }
+            
+            return `Mai Opticals Prescription\n\n` +
+                   `Patient: ${data.patientName} (${data.age})\n` +
+                   `Phone: ${data.phone}\n\n` +
+                   `Right Eye: SPH ${data.reSphere}, CYL ${data.reCylinder}, Axis ${data.reAxis}, PD ${data.rePd}\n` +
+                   `Left Eye: SPH ${data.leSphere}, CYL ${data.leCylinder}, Axis ${data.leAxis}, PD ${data.lePd}\n\n` +
+                   `Lens: ${data.lensType}\n` +
+                   `Frame: ${data.frameType}` +
+                   paymentInfo + `\n\n` +
+                   `Notes: ${data.notes || 'None'}\n\n` +
+                   `Thank you for choosing Mai Opticals, Birgunj!`;
+        }
+    </script>
+</body>
+</html>
